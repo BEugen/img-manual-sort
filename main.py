@@ -18,11 +18,20 @@ class ImagerSortApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
         self.setupUi(self)  # Это нужно для инициализации нашего дизайна
         self.source.clicked.connect(self.source_browse)
         self.destination.clicked.connect(self.destination_browse)
+        self.pb0.clicked.connect(self.img_empty)
+        self.pb1.clicked.connect(self.img_dust)
+        self.pb2.clicked.connect(self.img_broken)
+        self.pb3.clicked.connect(self.img_briket)
         self.img_parts = None
         self.s_path = ''
         self.d_path = ''
-        self.im_index = 0
+        self.im_index = -1
         self.im_name = ''
+        self.dust_path = ''
+        self.empty_path = ''
+        self.broken_path = ''
+        self.briket_path = ''
+
 
     def source_browse(self):
         sr_directory = QtWidgets.QFileDialog.getExistingDirectory(self, "Выберите папку")
@@ -35,10 +44,25 @@ class ImagerSortApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
         ds_directory = QtWidgets.QFileDialog.getExistingDirectory(self, "Выберите папку")
         if ds_directory:
             self.d_path = ds_directory
+            self.empty_path = ds_directory + '/0'
+            self.dust_path = ds_directory + '/1'
+            self.broken_path = ds_directory + '/2'
+            self.briket_path = ds_directory + '/3'
+            if not os.path.exists(self.empty_path):
+                os.makedirs(self.empty_path)
+            if not os.path.exists(self.dust_path):
+                os.makedirs(self.dust_path)
+            if not os.path.exists(self.broken_path):
+                os.makedirs(self.broken_path)
+            if not os.path.exists(self.briket_path):
+                os.makedirs(self.briket_path)
+
 
     def load_image(self):
-        if self.im_index > 3 or not self.img_parts:
+        if self.im_index > 3 or self.im_index == -1:
+            self.im_index = 0
             img = random.choice(os.listdir(self.s_path))
+            self.count.setText(str(len(os.listdir(self.s_path))))
             self.im_name = img
             im = cv2.resize(cv2.imread(self.s_path + '/' + img), (224, 224))
             im = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)
@@ -51,6 +75,7 @@ class ImagerSortApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
             for x in range(0, 4):
                 y1, y2, x1, x2 = self.img_section(x)
                 self.img_parts[x*224:x*224 + 224, 0:224] = cv2.resize(im[y1:y2, x1:x2], (224, 224))
+            os.remove(self.s_path + '/' + self.im_name)
         self.im_show()
 
     def im_show(self):
@@ -82,24 +107,24 @@ class ImagerSortApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
             return 112, 224, 112, 224
 
     def img_empty(self):
-        if not os.path.exists(self.d_path + '/0'):
-            os.makedirs(self.d_path + '/0')
+        self.img_write(self.empty_path + '/' + self.gen_file_name())
 
     def img_dust(self):
-        if not os.path.exists(self.d_path + '/1'):
-            os.makedirs(self.d_path + '/1')
+        self.img_write(self.dust_path + '/' + self.gen_file_name())
 
     def img_broken(self):
-        if not os.path.exists(self.d_path + '/2'):
-            os.makedirs(self.d_path + '/2')
+        self.img_write(self.broken_path + '/' + self.gen_file_name())
 
     def img_briket(self):
-        if not os.path.exists(self.d_path + '/3'):
-            os.makedirs(self.d_path + '/3')
+        self.img_write(self.briket_path + '/' + self.gen_file_name())
 
     def img_write(self, path):
         i = self.im_index - 1
-        cv2.imwrite(self.img_parts[i*224:i*224 + 224, 0:224], path)
+        cv2.imwrite(path, self.img_parts[i*224:i*224 + 224, 0:224], [int(cv2.IMWRITE_JPEG_QUALITY), 100])
+        self.load_image()
+
+    def gen_file_name(self):
+       return 'IM-K2-UB_' + str(random.randint(0, 20000)) + '.jpg'
 
 
 def main():
