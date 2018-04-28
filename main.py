@@ -21,8 +21,9 @@ class ImagerSortApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
         self.pb0.clicked.connect(self.img_empty)
         self.pb1.clicked.connect(self.img_lowmaterial)
         self.pb2.clicked.connect(self.img_dust)
-        self.pb3.clicked.connect(self.img_broken)
-        self.pb4.clicked.connect(self.img_briket)
+        self.pb3.clicked.connect(self.img_briket_dust)
+        self.pb4.clicked.connect(self.img_broken)
+        self.pb5.clicked.connect(self.img_briket)
         self.img_parts = None
         self.s_path = ''
         self.d_path = ''
@@ -33,6 +34,7 @@ class ImagerSortApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
         self.empty_path = ''
         self.broken_path = ''
         self.briket_path = ''
+        self.dustbriket_path = ''
         self.img_code = 0
         self.img_class = ''
 
@@ -50,14 +52,17 @@ class ImagerSortApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
             self.empty_path = ds_directory + '/0'
             self.lowmat_path = ds_directory + '/1'
             self.dust_path = ds_directory + '/2'
-            self.broken_path = ds_directory + '/3'
-            self.briket_path = ds_directory + '/4'
+            self.dustbriket_path = ds_directory + '/3'
+            self.broken_path = ds_directory + '/4'
+            self.briket_path = ds_directory + '/5'
             if not os.path.exists(self.lowmat_path):
                 os.makedirs(self.lowmat_path)
             if not os.path.exists(self.empty_path):
                 os.makedirs(self.empty_path)
             if not os.path.exists(self.dust_path):
                 os.makedirs(self.dust_path)
+            if not os.path.exists(self.dustbriket_path):
+                os.makedirs(self.dustbriket_path)
             if not os.path.exists(self.broken_path):
                 os.makedirs(self.broken_path)
             if not os.path.exists(self.briket_path):
@@ -130,6 +135,9 @@ class ImagerSortApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
 
     def img_dust(self):
         self.img_write(self.dust_path + '/' + self.gen_file_name(self.dust_path))
+
+    def img_briket_dust(self):
+        self.img_write(self.dustbriket_path + '/' + self.gen_file_name(self.dustbriket_path))
 
     def img_broken(self):
         self.img_write(self.broken_path + '/' + self.gen_file_name(self.broken_path))
