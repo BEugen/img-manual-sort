@@ -19,15 +19,17 @@ class ImagerSortApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
         self.source.clicked.connect(self.source_browse)
         self.destination.clicked.connect(self.destination_browse)
         self.pb0.clicked.connect(self.img_empty)
-        self.pb1.clicked.connect(self.img_dust)
-        self.pb2.clicked.connect(self.img_broken)
-        self.pb3.clicked.connect(self.img_briket)
+        self.pb1.clicked.connect(self.img_lowmaterial)
+        self.pb2.clicked.connect(self.img_dust)
+        self.pb3.clicked.connect(self.img_broken)
+        self.pb4.clicked.connect(self.img_briket)
         self.img_parts = None
         self.s_path = ''
         self.d_path = ''
         self.im_index = -1
         self.im_name = ''
         self.dust_path = ''
+        self.lowmat_path = ''
         self.empty_path = ''
         self.broken_path = ''
         self.briket_path = ''
@@ -45,9 +47,12 @@ class ImagerSortApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
         if ds_directory:
             self.d_path = ds_directory
             self.empty_path = ds_directory + '/0'
-            self.dust_path = ds_directory + '/1'
-            self.broken_path = ds_directory + '/2'
-            self.briket_path = ds_directory + '/3'
+            self.lowmat_path = ds_directory + '/1'
+            self.dust_path = ds_directory + '/2'
+            self.broken_path = ds_directory + '/3'
+            self.briket_path = ds_directory + '/4'
+            if not os.path.exists(self.lowmat_path):
+                os.makedirs(self.lowmat_path)
             if not os.path.exists(self.empty_path):
                 os.makedirs(self.empty_path)
             if not os.path.exists(self.dust_path):
@@ -65,6 +70,7 @@ class ImagerSortApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
             self.count.setText(str(len(os.listdir(self.s_path))))
             self.im_name = img
             im = cv2.resize(cv2.imread(self.s_path + '/' + img), (224, 224))
+            self.im_show_preview(im)
             im = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)
             (h, w) = im.shape[:2]
             centr = (w / 3, h / 2)
@@ -88,6 +94,13 @@ class ImagerSortApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
         self.img.setPixmap(pixmap)
         self.im_index = self.im_index + 1
 
+    def im_show_preview(self, im):
+        h, w, ch = im.shape
+        bpl = 3 * w
+        qim = QImage(im, w, h, bpl, QImage.Format_RGB888)
+        pixmap = QPixmap(qim)
+        self.img_full.setPixmap(pixmap)
+
     def img_section(self, index):
         if index == 0:
             # |x| |
@@ -108,6 +121,9 @@ class ImagerSortApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
 
     def img_empty(self):
         self.img_write(self.empty_path + '/' + self.gen_file_name())
+
+    def img_lowmaterial(self):
+        self.img_write(self.lowmat_path + '/' + self.gen_file_name())
 
     def img_dust(self):
         self.img_write(self.dust_path + '/' + self.gen_file_name())
