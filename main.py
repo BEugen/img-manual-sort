@@ -7,8 +7,8 @@ import random
 import cv2
 import numpy as np
 
-
 options = {'sr': '', 'ds': '', 'img': None, 'i': 0}
+
 
 class ImagerSortApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
     def __init__(self):
@@ -33,7 +33,8 @@ class ImagerSortApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
         self.empty_path = ''
         self.broken_path = ''
         self.briket_path = ''
-
+        self.img_code = 0
+        self.img_class = ''
 
     def source_browse(self):
         sr_directory = QtWidgets.QFileDialog.getExistingDirectory(self, "Выберите папку")
@@ -62,13 +63,15 @@ class ImagerSortApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
             if not os.path.exists(self.briket_path):
                 os.makedirs(self.briket_path)
 
-
     def load_image(self):
         if self.im_index > 3 or self.im_index == -1:
             self.im_index = 0
             img = random.choice(os.listdir(self.s_path))
             self.count.setText(str(len(os.listdir(self.s_path))))
             self.im_name = img
+            self.img_code = random.randint(0, 20000)
+            imp = self.s_path.split('/')
+            self.img_class = imp[len(imp) - 1]
             im = cv2.resize(cv2.imread(self.s_path + '/' + img), (224, 224))
             self.im_show_preview(im)
             im = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)
@@ -77,10 +80,10 @@ class ImagerSortApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
             M = cv2.getRotationMatrix2D(centr, -15, 1.3)
             im = cv2.warpAffine(im, M, (w, h))
             im = im[0:h, 30:190]
-            self.img_parts = np.zeros((224*4, 224), np.uint8)
+            self.img_parts = np.zeros((224 * 4, 224), np.uint8)
             for x in range(0, 4):
                 y1, y2, x1, x2 = self.img_section(x)
-                self.img_parts[x*224:x*224 + 224, 0:224] = cv2.resize(im[y1:y2, x1:x2], (224, 224))
+                self.img_parts[x * 224:x * 224 + 224, 0:224] = cv2.resize(im[y1:y2, x1:x2], (224, 224))
             os.remove(self.s_path + '/' + self.im_name)
         self.im_show()
 
@@ -107,40 +110,43 @@ class ImagerSortApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
             # | | |
             return 0, 112, 0, 112
         elif index == 1:
-            #| |x|
-            #| | |
+            # | |x|
+            # | | |
             return 0, 112, 112, 224
         elif index == 2:
-            #| | |
-            #|x| |
+            # | | |
+            # |x| |
             return 112, 224, 0, 112
         else:
-            #| | |
-            #| |x|
+            # | | |
+            # | |x|
             return 112, 224, 112, 224
 
     def img_empty(self):
-        self.img_write(self.empty_path + '/' + self.gen_file_name())
+        self.img_write(self.empty_path + '/' + self.gen_file_name(self.empty_path))
 
     def img_lowmaterial(self):
-        self.img_write(self.lowmat_path + '/' + self.gen_file_name())
+        self.img_write(self.lowmat_path + '/' + self.gen_file_name(self.lowmat_path))
 
     def img_dust(self):
-        self.img_write(self.dust_path + '/' + self.gen_file_name())
+        self.img_write(self.dust_path + '/' + self.gen_file_name(self.dust_path))
 
     def img_broken(self):
-        self.img_write(self.broken_path + '/' + self.gen_file_name())
+        self.img_write(self.broken_path + '/' + self.gen_file_name(self.broken_path))
 
     def img_briket(self):
-        self.img_write(self.briket_path + '/' + self.gen_file_name())
+        self.img_write(self.briket_path + '/' + self.gen_file_name(self.briket_path))
 
     def img_write(self, path):
         i = self.im_index - 1
-        cv2.imwrite(path, self.img_parts[i*224:i*224 + 224, 0:224], [int(cv2.IMWRITE_JPEG_QUALITY), 100])
+        cv2.imwrite(path, self.img_parts[i * 224:i * 224 + 224, 0:224], [int(cv2.IMWRITE_JPEG_QUALITY), 100])
         self.load_image()
 
-    def gen_file_name(self):
-       return 'IM-K2-UB_' + str(random.randint(0, 20000)) + '.jpg'
+    def gen_file_name(self, path):
+        path = path.split('/')
+        im_class = path[len(path) - 1]
+        return self.img_class + '_IM-K2-UB_' + str(self.img_code) + '_' + \
+               str(self.im_index - 1) + '_' + im_class + ".jpg"
 
 
 def main():
