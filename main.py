@@ -1,5 +1,5 @@
 import sys  # sys нужен для передачи argv в QApplication
-from PyQt5 import QtWidgets
+from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtGui import QPixmap, QImage
 import design  # Это наш конвертированный файл дизайна
 import os
@@ -37,6 +37,7 @@ class ImagerSortApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
         self.dustbriket_path = ''
         self.img_code = 0
         self.img_class = ''
+        self.installEventFilter(self)
 
     def source_browse(self):
         sr_directory = QtWidgets.QFileDialog.getExistingDirectory(self, "Выберите папку")
@@ -155,6 +156,22 @@ class ImagerSortApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
         im_class = path[len(path) - 1]
         return self.img_class + '_IM-K2-UB_' + str(self.img_code) + '_' + \
                str(self.im_index - 1) + '_' + im_class + ".jpg"
+
+    def eventFilter(self, obj, e):
+        if e.type() == QtCore.QEvent.KeyPress:
+            if e.key() == QtCore.Qt.Key_0:
+                self.img_empty()
+            if e.key() == QtCore.Qt.Key_1:
+                self.img_lowmaterial()
+            if e.key() == QtCore.Qt.Key_2:
+                self.img_dust()
+            if e.key() == QtCore.Qt.Key_3:
+                self.img_briket_dust()
+            if e.key() == QtCore.Qt.Key_4:
+                self.img_broken()
+            if e.key() == QtCore.Qt.Key_5:
+                self.img_briket()
+        return QtWidgets.QWidget.eventFilter(self, obj, e)
 
 
 def main():
